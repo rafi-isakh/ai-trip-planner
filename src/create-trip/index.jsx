@@ -14,13 +14,17 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { FcGoogle } from "react-icons/fc";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import {useGoogleLogin} from "@react-oauth/google";
 import axios from "axios";
+import {db} from "@/service/firebaseConfig.jsx";
+import { doc, setDoc } from "firebase/firestore";
 
 function CreateTrip() {
     const [place, setPlace] = useState()
     const [formData, setFormData] = useState([])
     const [openDialog, setOpenDialog] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     const handleInputChange = (name, value) => {
 
@@ -52,6 +56,7 @@ function CreateTrip() {
             console.log('Please enter duration less than 5');
         }
 
+        setLoading(true)
         const FINAL_PROMPT = AI_PROMPT
             .replace('{location}', formData?.location.label)
             .replace('{totalDays}', formData?.duration)
@@ -59,10 +64,23 @@ function CreateTrip() {
             .replace('{budget}', formData?.budget)
             .replace('{totalDays}', formData?.duration)
 
-        console.log(FINAL_PROMPT);
-
         const result = await chatSession.sendMessage(FINAL_PROMPT)
         console.log(result?.response?.text())
+        setLoading(false)
+        saveAITrip(result?.response?.text())
+    }
+
+    const saveAITrip = async (trip) => {
+        setLoading(true)
+        const user = JSON.parse(localStorage.getItem('user'))
+        const documentId = Date.now().toString()
+        await setDoc(doc(db, "AITrips", documentId), {
+            userSelection: formData,
+            tripData: trip,
+            userEmail: user?.email,
+            id: documentId,
+        })
+        setLoading(false)
     }
 
     const getUserProfile = (tokenInfo) => {
@@ -135,7 +153,11 @@ function CreateTrip() {
             </div>
 
             <div className="my-10 justify-end flex">
-                <Button onClick={onGenerateTrip}>Generate trip</Button>
+                <Button disables={loading} onClick={onGenerateTrip}>
+                    {loading ?
+                        <AiOutlineLoading3Quarters className='h-7 w-7 animate-spin'/> : "Generate trip"
+                    }
+                </Button>
             </div>
             <Dialog open={openDialog}>
                 <DialogContent>
@@ -145,7 +167,7 @@ function CreateTrip() {
                             <h2 className="font-bold text-lg mt-7">Sign In with Google</h2>
                             <p>Sign in to the app securely with Google authentication</p>
 
-                            <Button onClick={login} className="w-full mt-5 flex gap-4 items-center">
+                            <Button disabled={loading} onClick={login} className="w-full mt-5 flex gap-4 items-center">
                                 <FcGoogle className="h-7 w-7"/>
                                 Sign In with Google
                             </Button>
