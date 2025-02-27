@@ -10,8 +10,6 @@ import {
     DialogContent,
     DialogDescription,
     DialogHeader,
-    DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import { FcGoogle } from "react-icons/fc";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -19,12 +17,14 @@ import {useGoogleLogin} from "@react-oauth/google";
 import axios from "axios";
 import {db} from "@/service/firebaseConfig.jsx";
 import { doc, setDoc } from "firebase/firestore";
+import {useNavigate} from "react-router";
 
 function CreateTrip() {
     const [place, setPlace] = useState()
     const [formData, setFormData] = useState([])
     const [openDialog, setOpenDialog] = useState(false)
     const [loading, setLoading] = useState(false)
+    const router = useNavigate()
 
     const handleInputChange = (name, value) => {
 
@@ -65,9 +65,8 @@ function CreateTrip() {
             .replace('{totalDays}', formData?.duration)
 
         const result = await chatSession.sendMessage(FINAL_PROMPT)
-        console.log(result?.response?.text())
         setLoading(false)
-        saveAITrip(result?.response?.text())
+        saveAITrip(JSON.parse(result?.response?.text()))
     }
 
     const saveAITrip = async (trip) => {
@@ -81,6 +80,7 @@ function CreateTrip() {
             id: documentId,
         })
         setLoading(false)
+        router('/view-trip/' + documentId)
     }
 
     const getUserProfile = (tokenInfo) => {
