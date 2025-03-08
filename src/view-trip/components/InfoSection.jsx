@@ -14,8 +14,9 @@ function InfoSection({trip}) {
         const data = {
             textQuery: trip?.userSelection?.location?.label
         }
+        const photoIndex = Math.floor(Math.random() * 6);
         const result = await GetPlaceDetails(data).then( response => {
-            const url = PHOTO_REF_URL.replace('{NAME}', response.data.places[0].photos[1].name)
+            const url = PHOTO_REF_URL.replace('{NAME}', response.data.places[0].photos[photoIndex].name)
             setPhotoUrl(url)
             fetch(url)
                 .then(res => res.blob())
