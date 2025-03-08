@@ -19,7 +19,7 @@ function Itinerary({ trip }) {
                     <div key={index}>
                         <h2 className="font-medium text-lg">Day {index + 1}</h2>
                         <div className="grid md:grid-cols-2 gap-5">
-                            {item.places.map((place, index) => (
+                            {item.activities.map((place, index) => (
                                 <div key={index} className="my-3">
                                     <h2 className="font-medium text-sm text-orange-600">{item.bestTimeToVisit}</h2>
                                     <PlaceCardItem place={place} />
